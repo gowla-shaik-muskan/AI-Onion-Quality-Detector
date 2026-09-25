@@ -1,0 +1,9 @@
+path: D:/AI-Onion-Quality-Detector/onion_dataset
+
+train: train/images
+val: valid/images
+test: test/images
+
+names:
+  0: Fresh Onion
+  1: Defected Onion
