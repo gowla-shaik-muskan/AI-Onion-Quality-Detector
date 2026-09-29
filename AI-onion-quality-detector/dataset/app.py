@@ -6,8 +6,7 @@ from pathlib import Path
 import uuid
 
 app = Flask(
-    __name__,
-    template_folder=os.path.join(os.path.dirname(__file__), "..", "templates")
+    __name__
 )
 
 BASE_DIR = Path(__file__).resolve().parent

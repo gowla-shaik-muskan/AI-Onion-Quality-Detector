@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Onion Quality Assessment</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7f5;
+            color: #222;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #1b5e20;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #1b5e20;
+        }
+
+        .upload-box {
+            text-align: center;
+            border: 2px dashed #81c784;
+            padding: 35px;
+            border-radius: 12px;
+            background: #f8fff8;
+        }
+
+        input[type="file"] {
+            margin: 15px;
+            padding: 10px;
+        }
+
+        button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1b5e20;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Statistics */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+        }
+
+        .stat {
+            padding: 22px;
+            border-radius: 12px;
+            background: #f5f5f5;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .stat h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .stat h2 {
+            font-size: 30px;
+            margin: 0;
+        }
+
+        .green {
+            color: #2e7d32;
+        }
+
+        .red {
+            color: #c62828;
+        }
+
+        .yellow {
+            color: #f9a825;
+        }
+
+        .gray {
+            color: #616161;
+        }
+
+        /* Percentages */
+
+        .percentage-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .percentage {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            background: #f5f5f5;
+        }
+
+        .percentage h3 {
+            margin-bottom: 10px;
+        }
+
+        .percentage-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Result image */
+
+        .result-image {
+            text-align: center;
+        }
+
+        .result-image img {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 12px;
+            border: 2px solid #ddd;
+            margin-top: 10px;
+        }
+
+        /* Detection table */
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #1b5e20;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-confirmed {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .status-verification {
+            color: #f9a825;
+            font-weight: bold;
+        }
+
+        .mark-green {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .mark-red {
+            color: #c62828;
+            font-weight: bold;
+        }
+
+        .mark-yellow {
+            color: #f9a825;
+            font-weight: bold;
+        }
+
+        .mark-gray {
+            color: #616161;
+            font-weight: bold;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            padding: 10px 18px;
+            border-radius: 20px;
+            background: #f5f5f5;
+        }
+
+        footer {
+            background: #1b5e20;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 600px) {
+
+            header h1 {
+                font-size: 23px;
+            }
+
+            .container {
+                width: 95%;
+            }
+
+            .percentage-box {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- HEADER -->
+
+    <header>
+
+        <h1>🧅 AI-Based Onion Quality Assessment</h1>
+
+        <p>
+            AI-assisted detection and batch quality analysis using YOLO
+        </p>
+
+    </header>
+
+
+    <div class="container">
+
+
+        <!-- UPLOAD SECTION -->
+
+        <div class="card">
+
+            <h2>Upload Onion Image</h2>
+
+            {% if error %}
+
+            <div class="error">
+                {{ error }}
+            </div>
+
+            {% endif %}
+
+
+            <div class="upload-box">
+
+                <p>
+                    Upload an image containing onions or other objects.
+                </p>
+
+                <p style="margin-top:8px;">
+                    The AI model will identify Fresh Onion, Defected Onion
+                    and Non-Onion objects.
+                </p>
+
+
+                <form method="POST"
+                      enctype="multipart/form-data">
+
+                    <input
+                        type="file"
+                        name="image"
+                        accept="image/*"
+                        required
+                    >
+
+                    <br>
+
+                    <button type="submit">
+                        🔍 Analyze Image
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+
+        {% if result %}
+
+
+        <!-- ANALYSIS RESULT -->
+
+        <div class="card">
+
+            <h2>📊 Batch Analysis</h2>
+
+
+            <div class="stats">
+
+
+                <!-- TOTAL -->
+
+                <div class="stat">
+
+                    <h3>
+                        Total Detected
+                    </h3>
+
+                    <h2>
+                        {{ result.total }}
+                    </h2>
+
+                </div>
+
+
+                <!-- FRESH -->
+
+                <div class="stat">
+
+                    <h3 class="green">
+                        Fresh Onions
+                    </h3>
+
+                    <h2 class="green">
+                        {{ fresh }}
+                    </h2>
+
+                </div>
+
+
+                <!-- DEFECTED -->
+
+                <div class="stat">
+
+                    <h3 class="red">
+                        Defected Onions
+                    </h3>
+
+                    <h2 class="red">
+                        {{ defected }}
+                    </h2>
+
+                </div>
+
+
+                <!-- NON ONION -->
+
+                <div class="stat">
+
+                    <h3 class="gray">
+                        Non-Onion
+                    </h3>
+
+                    <h2 class="gray">
+                        {{ non_onion }}
+                    </h2>
+
+                </div>
+
+
+                <!-- UNCERTAIN -->
+
+                <div class="stat">
+
+                    <h3 class="yellow">
+                        Needs Verification
+                    </h3>
+
+                    <h2 class="yellow">
+                        {{ uncertain }}
+                    </h2>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- QUALITY PERCENTAGES -->
+
+        <div class="card">
+
+            <h2>📈 Onion Quality Percentage</h2>
+
+
+            <div class="percentage-box">
+
+
+                <div class="percentage">
+
+                    <h3 class="green">
+                        Fresh Onion Percentage
+                    </h3>
+
+                    <div class="percentage-value green">
+                        {{ fresh_percentage }}%
+                    </div>
+
+                </div>
+
+
+                <div class="percentage">
+
+                    <h3 class="red">
+                        Defected Onion Percentage
+                    </h3>
+
+                    <div class="percentage-value red">
+                        {{ defected_percentage }}%
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- RESULT IMAGE -->
+
+        {% if image_path %}
+
+        <div class="card">
+
+            <h2>🖼️ AI Detection Result</h2>
+
+            <div class="result-image">
+
+                <img
+                    src="{{ image_path }}"
+                    alt="AI Onion Detection Result"
+                >
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+
+        <!-- DETECTION DETAILS -->
+
+        <div class="card">
+
+            <h2>🔎 Detection Details</h2>
+
+
+            {% if detections %}
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                #
+                            </th>
+
+                            <th>
+                                Detected Object
+                            </th>
+
+                            <th>
+                                Confidence
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Physical Mark
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for d in detections %}
+
+                        <tr>
+
+                            <td>
+                                {{ loop.index }}
+                            </td>
+
+
+                            <td>
+
+                                {% if d.name == "Fresh Onion" %}
+
+                                🧅 Fresh Onion
+
+                                {% elif d.name == "Defected Onion" %}
+
+                                🧅 Defected Onion
+
+                                {% elif d.name == "Non-Onion" %}
+
+                                📦 Non-Onion
+
+                                {% else %}
+
+                                {{ d.name }}
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ d.confidence }}%
+
+                            </td>
+
+
+                            <td>
+
+                                {% if d.status == "Confirmed" %}
+
+                                <span class="status-confirmed">
+                                    ✓ Confirmed
+                                </span>
+
+                                {% else %}
+
+                                <span class="status-verification">
+                                    ⚠️ Needs Verification
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if d.mark == "GREEN" %}
+
+                                <span class="mark-green">
+                                    🟢 GREEN
+                                </span>
+
+                                {% elif d.mark == "RED" %}
+
+                                <span class="mark-red">
+                                    🔴 RED
+                                </span>
+
+                                {% elif d.mark == "YELLOW" %}
+
+                                <span class="mark-yellow">
+                                    🟡 YELLOW
+                                </span>
+
+                                {% elif d.mark == "GRAY" %}
+
+                                <span class="mark-gray">
+                                    ⚪ GRAY
+                                </span>
+
+                                {% else %}
+
+                                {{ d.mark }}
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            {% else %}
+
+            <p>
+                No objects were detected in the uploaded image.
+            </p>
+
+            {% endif %}
+
+        </div>
+
+
+
+        <!-- MARKING SYSTEM -->
+
+        <div class="card">
+
+            <h2>🎨 Physical Identification System</h2>
+
+            <p>
+                The proposed system can use physical color marking
+                to help workers quickly identify onions after AI
+                classification.
+            </p>
+
+
+            <div class="legend">
+
+                <div class="legend-item">
+                    🟢 <strong>GREEN</strong> — Fresh Onion
+                </div>
+
+                <div class="legend-item">
+                    🟡 <strong>YELLOW</strong> — Needs Verification
+                </div>
+
+                <div class="legend-item">
+                    🔴 <strong>RED</strong> — Defected Onion
+                </div>
+
+                <div class="legend-item">
+                    ⚪ <strong>GRAY</strong> — Non-Onion
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        {% endif %}
+
+
+    </div>
+
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <p>
+            AI-Based Onion Quality Assessment
+        </p>
+
+        <p style="margin-top:6px;">
+            AgriVision AI Avengers | SIH 2026
+        </p>
+
+    </footer>
+
+
+</body>
+
+</html>
