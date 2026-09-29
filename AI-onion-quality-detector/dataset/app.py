@@ -7,7 +7,7 @@ import uuid
 
 app = Flask(
     __name__,
-    template_folder=os.path.join(os.path.dirname(__file__), "templates")
+    template_folder=os.path.join(os.path.dirname(__file__), "..", "templates")
 )
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -20,7 +20,7 @@ RESULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
 # 3-CLASS TRAINED MODEL
 model = YOLO(
-    r"D:\AI-Onion-Quality-Detector\runs\detect\onion_3class_test\weights\best.pt"
+    BASE_DIR.parent / "model" / "best.pt"
 )
 
 
