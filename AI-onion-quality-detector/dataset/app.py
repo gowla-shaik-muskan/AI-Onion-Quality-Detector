@@ -1,6 +1,13 @@
 from flask import Flask, render_template, request
 from ultralytics import YOLO
 import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+import torch
+
+torch.set_num_threads(1)
 from werkzeug.utils import secure_filename
 from pathlib import Path
 import uuid
@@ -66,9 +73,12 @@ def home():
 
         # YOLO prediction
         results = model.predict(
-            source=str(upload_path),
-            conf=0.25,
-            verbose=False
+         source=str(upload_path),
+         conf=0.25,
+         imgsz=320,
+         device="cpu",
+         max_det=50,
+         verbose=False
         )
 
         prediction = results[0]
